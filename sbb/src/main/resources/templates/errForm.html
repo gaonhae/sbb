@@ -1,0 +1,6 @@
+<!--폼에 입력한 사항이 조건에 맞지 않을 경우 오류 발생-->
+
+<div th:fragment="formErrorsFragment" class="alert alert-danger" role="alert" th:if="${#fields.hasAnyErrors()}">
+	<div th:each="err : ${#fields.allErrors()}" th:text="${err}"/>
+</div>
+
