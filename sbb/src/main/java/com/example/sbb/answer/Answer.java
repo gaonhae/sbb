@@ -37,4 +37,5 @@ public class Answer {
 	@ManyToOne
 	private SiteUser author;
 
+
 }

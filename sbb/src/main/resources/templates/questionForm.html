@@ -1,7 +1,8 @@
 <html layout:decorate="~{layout}">  <!--템플릿 상속-->
 <div layout:fragment="content" class="container">   <!-- layout의 content fragment에 삽입 -->
     <h5 class="my-3 border-bottom pb-2">질문등록</h5>
-    <form th:action="@{/question/create}" th:object="${questionForm}" method="post">    <!-- form을 작성하면 POST로 create 메서드에 전송-->
+    <form th:object="${questionForm}" method="post">    <!-- form을 작성하면 POST로 create 메서드에 전송-->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
     	<div th:replace="errForm :: formErrorsFragment"></div>
         <div class="mb-3">
             <label for="subject" class="form-label">제목</label>
