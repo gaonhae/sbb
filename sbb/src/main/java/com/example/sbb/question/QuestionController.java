@@ -66,7 +66,6 @@ public class QuestionController {
 		
 	}
 
-
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/modify/{id}")
 	public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal) {
@@ -105,4 +104,12 @@ public class QuestionController {
 	}
 	
 
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/vote/{id}")
+	public String quesitionVote(Principal principal, @PathVariable("id") Integer id){
+		Question question = this.questionService.getQuestion(id);
+		SiteUser siteUser = this.userService.getUser(principal.getName());
+		this.questionService.vote(question, siteUser);
+		return String.format("redirect:/question/detail/%s", id);
+	}
 }
