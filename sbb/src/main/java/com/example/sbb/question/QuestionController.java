@@ -35,9 +35,10 @@ public class QuestionController {
 	private final UserService userService;
 	
 	@RequestMapping("/list")	//질문 리스트
-	public String list(Model model, @RequestParam(value="page", defaultValue="0") int page) {
-		Page<Question> paging = this.questionService.getList(page);
+	public String list(Model model, @RequestParam(value="page", defaultValue="0") int page, @RequestParam(value = "kw", defaultValue = "") String kw) {
+		Page<Question> paging = this.questionService.getList(page, kw);
         model.addAttribute("paging", paging);	//템플릿에 페이징에 대한 내용을 넘겨줌
+		model.addAttribute("kw", kw);
 		return "questionList";
 	}
 	

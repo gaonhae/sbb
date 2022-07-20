@@ -5,16 +5,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.sbb.answer.Answer;
 import com.example.sbb.user.SiteUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.example.sbb.DataNotFoundException;
 
 import lombok.RequiredArgsConstructor;
+
+import javax.persistence.criteria.*;
 
 @RequiredArgsConstructor
 @Service
@@ -40,11 +44,12 @@ public class QuestionService {
 		this.questionRepository.save(q);
 	}
 	
-	public Page<Question> getList(int page){	//questionList 템플릿에 넘겨 페이징을 위해 사용
+	public Page<Question> getList(int page, String kw){	//questionList 템플릿에 넘겨 페이징을 위해 사용
 		List<Sort.Order> sorts = new ArrayList<>();
 		sorts.add(Sort.Order.desc("createDate"));
 		Pageable pageable = PageRequest.of(page, 30, Sort.by(sorts));
-		return this.questionRepository.findAll(pageable);
+		Specification<Question> spec = search(kw);
+		return this.questionRepository.findAll(spec, pageable);
 	}
 
 	public void modify(Question question, String subject, String content){
@@ -61,6 +66,24 @@ public class QuestionService {
 	public void vote(Question question, SiteUser siteUser){
 		question.getVoter().add(siteUser);
 		this.questionRepository.save(question);
+	}
+
+	private Specification<Question> search(String kw) {
+		return new Specification<>() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Predicate toPredicate(Root<Question> q, CriteriaQuery<?> query, CriteriaBuilder cb) {
+				query.distinct(true);  // 중복을 제거
+				Join<Question, SiteUser> u1 = q.join("author", JoinType.LEFT);
+				Join<Question, Answer> a = q.join("answerList", JoinType.LEFT);
+				Join<Answer, SiteUser> u2 = a.join("author", JoinType.LEFT);
+				return cb.or(cb.like(q.get("subject"), "%" + kw + "%"), // 제목
+						cb.like(q.get("content"), "%" + kw + "%"),      // 내용
+						cb.like(u1.get("username"), "%" + kw + "%"),    // 질문 작성자
+						cb.like(a.get("content"), "%" + kw + "%"),      // 답변 내용
+						cb.like(u2.get("username"), "%" + kw + "%"));   // 답변 작성자
+			}
+		};
 	}
 
 }
